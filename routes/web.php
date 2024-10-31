@@ -54,6 +54,14 @@ Route::middleware(['auth', RoleMiddleware::class . ':customer'])->group(function
 // Admin Routes, accessible only by users with the 'admin' role
 Route::middleware(['auth', RoleMiddleware::class . ':admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
-    Route::get('/admin/orders', [AdminController::class, 'orderList'])->name('admin.orders');
-    Route::post('/admin/order/{order}/status', [AdminController::class, 'updateOrderStatus'])->name('admin.order.updateStatus');
+    Route::get('/admin/orders', [AdminController::class, 'orders'])->name('admin.orders.index');
+    Route::put('/admin/orders/{order}', [AdminController::class, 'updateOrder'])->name('admin.orders.update');
+    // Products Management Routes
+    // Products Management Routes within AdminController
+    Route::get('/admin/products', [AdminController::class, 'products'])->name('admin.products.index');
+    Route::get('/admin/products/create', [AdminController::class, 'createProduct'])->name('admin.products.create');
+    Route::post('/admin/products', [AdminController::class, 'storeProduct'])->name('admin.products.store');
+    Route::get('/admin/products/{product}/edit', [AdminController::class, 'editProduct'])->name('admin.products.edit');
+    Route::put('/admin/products/{product}', [AdminController::class, 'updateProduct'])->name('admin.products.update');
+    Route::delete('/admin/products/{product}', [AdminController::class, 'destroyProduct'])->name('admin.products.destroy');
 });
