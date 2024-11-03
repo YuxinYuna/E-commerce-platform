@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CartItem extends Model
 {
@@ -20,18 +21,14 @@ class CartItem extends Model
         'quantity',
     ];
 
-    /**
-     * Define relationship with User model.
-     */
-    public function user()
+    // Define relationship with User
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Define relationship with Product model.
-     */
-    public function product()
+    // Define relationship with Product
+    public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }

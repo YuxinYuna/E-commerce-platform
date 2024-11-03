@@ -16,5 +16,9 @@
         "sass": "^1.56.1",
         "tailwindcss": "^3.4.13",
         "vite": "^5.0"
+    },
+    "dependencies": {
+        "chart.js": "^4.4.6",
+        "countup.js": "^2.8.0"
     }
 }

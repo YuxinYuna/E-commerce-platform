@@ -21,11 +21,21 @@
         </thead>
         <tbody>
             @foreach($orders as $order)
-                <tr>
-                    <td>{{ $order->id }}</td>
+                @php
+                    // Decode the items JSON data and initialize total cost
+                    $items = json_decode($order->items, true) ?? [];
+                    $totalCost = 0;
+
+                    // Calculate the total by summing the price * quantity for each item
+                    foreach ($items as $item) {
+                        $totalCost += $item['price'] * $item['quantity'];
+                    }
+                @endphp
+                <tr data-toggle="collapse" data-target="#orderDetails{{ $order->id }}" class="clickable">
+                    <td>{{ $order->order_number }}</td>
                     <td>{{ $order->user->name }}</td>
                     <td>{{ $order->status }}</td>
-                    <td>${{ $order->total }}</td>
+                    <td>${{ number_format($totalCost, 2) }}</td>
                     <td>
                         @if($order->status === 'Pending')
                             <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
@@ -36,6 +46,29 @@
                         @else
                             <span class="badge badge-success">Shipped</span>
                         @endif
+                    </td>
+                </tr>
+                <tr id="orderDetails{{ $order->id }}" class="collapse">
+                    <td colspan="5">
+                        <div class="p-3">
+                            <h5>Order Details</h5>
+                            <p><strong>Order Number:</strong> {{ $order->order_number }}</p>
+                            <p><strong>Customer Name:</strong> {{ $order->user->name }}</p>
+                            <p><strong>Email:</strong> {{ $order->user->email }}</p>
+                            <p><strong>Items:</strong></p>
+                            <ul>
+                                @foreach($items as $item)
+                                    @php
+                                        $itemTotal = $item['quantity'] * $item['price'];
+                                    @endphp
+                                    <li>
+                                        <img src="{{ asset('images/products/' . $item['image']) }}" alt="{{ $item['name'] }}" style="width: 50px;">
+                                        {{ $item['name'] }} - Quantity: {{ $item['quantity'] }} - Price: ${{ number_format($item['price'], 2) }} - Total: ${{ number_format($itemTotal, 2) }}
+                                    </li>
+                                @endforeach
+                            </ul>
+                            <p><strong>Total Cost:</strong> ${{ number_format($totalCost, 2) }}</p>
+                        </div>
                     </td>
                 </tr>
             @endforeach

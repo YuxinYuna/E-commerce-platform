@@ -13,9 +13,14 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('status')->default('pending');
+            $table->string('order_number', 15)->unique();
+            $table->unsignedBigInteger('user_id');
+            $table->string('status');
+            $table->json('items')->nullable(); // Add this line to include the 'items' column
             $table->timestamps();
+    
+            // Foreign key constraint if needed
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

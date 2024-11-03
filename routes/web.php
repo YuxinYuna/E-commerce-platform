@@ -45,10 +45,12 @@ Route::post('/password/confirm', [ConfirmPasswordController::class, 'confirm']);
 
 // Customer (Buyer) Routes, accessible only by users with the 'customer' role
 Route::middleware(['auth', RoleMiddleware::class . ':customer'])->group(function () {
-    Route::get('/account', [ShopController::class, 'account'])->name('account');
+    Route::get('/account/{section}', [ShopController::class, 'account'])->name('account');
+    Route::put('/account/profile/update', [ShopController::class, 'updateProfile'])->name('profile.update');
     Route::post('/cart/update/{product}', [ShopController::class, 'updateCart'])->name('cart.update');
     Route::post('/cart/remove/{product}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/checkout', [ShopController::class, 'processCheckout'])->name('checkout.process');
+    Route::post('/cart/add/{product}', [ShopController::class, 'add'])->name('cart.add');
 });
 
 // Admin Routes, accessible only by users with the 'admin' role

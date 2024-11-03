@@ -29,7 +29,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/login';
+    protected $redirectTo = '/';
 
     /**
      * Create a new controller instance.
@@ -53,18 +53,27 @@ class RegisterController extends Controller
     }
 
 
-    /**
-     * Get a validator for an incoming registration request.
-     *
-     * @param  array  $data
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
     protected function validator(array $data)
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => [
+                'required',
+                'string',
+                'min:8',               // Minimum length of 8 characters
+                'regex:/[a-z]/',        // Must contain at least one lowercase letter
+                'regex:/[A-Z]/',        // Must contain at least one uppercase letter
+                'regex:/[0-9]/',        // Must contain at least one number
+                'regex:/[@$!%*#?&]/',   // Must contain a special character
+                'confirmed'             // Ensures password confirmation matches
+            ],
+            'address' => ['nullable', 'string', 'max:255'],
+        ], [
+            // Custom error messages for password requirements
+            'password.min' => 'Password must be at least 8 characters.',
+            'password.regex' => 'Password must include at least one lowercase letter, one uppercase letter, one number, and one special character.',
+            'password.confirmed' => 'Password confirmation does not match.',
         ]);
     }
 
@@ -80,6 +89,7 @@ class RegisterController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'address' => $data['address'],
             'role' => $data['role'],
         ]);
     }

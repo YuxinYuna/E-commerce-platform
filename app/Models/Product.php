@@ -14,11 +14,7 @@ class Product extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'price',
-        'stock',
-    ];
+    protected $fillable = ['name', 'price', 'stock', 'image'];
 
     /**
      * Define relationship with CartItem model.

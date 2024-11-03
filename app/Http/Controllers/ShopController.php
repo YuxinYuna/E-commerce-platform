@@ -8,6 +8,7 @@ use App\Models\CartItem;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class ShopController extends Controller
 {
@@ -29,87 +30,107 @@ class ShopController extends Controller
         return view('shop.cart', compact('cartItems'));
     }
 
-    /**
-     * Add a product to the cart.
-     */
-    public function addToCart(Request $request, Product $product)
+    // Add item to cart
+    public function add(Request $request, Product $product)
     {
         $quantity = $request->input('quantity', 1);
+        $user = Auth::user();
 
-        $cartItem = CartItem::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'product_id' => $product->id
-            ],
-            [
-                'quantity' => DB::raw("quantity + $quantity")
-            ]
-        );
+        // Check if the product is already in the cart
+        $cartItem = $user->cartItems()->where('product_id', $product->id)->first();
+        if ($cartItem) {
+            $cartItem->quantity += $quantity;
+        } else {
+            $cartItem = $user->cartItems()->create([
+                'product_id' => $product->id,
+                'quantity' => $quantity,
+            ]);
+        }
 
-        return redirect()->route('cart')->with('success', 'Product added to cart');
+        $cartItem->save();
+
+        return redirect()->route('account', ['section' => 'cart'])->with('success', 'Product added to cart successfully!');
     }
 
-    /**
-     * Update quantity of an item in the cart.
-     */
+    // Update cart item quantity
     public function updateCart(Request $request, Product $product)
     {
-        $quantity = $request->input('quantity', 1);
-
-        $cartItem = CartItem::where('user_id', Auth::id())
-            ->where('product_id', $product->id)
-            ->first();
+        $request->validate(['quantity' => 'required|integer|min:1']);
+        $cartItem = Auth::user()->cartItems->where('product_id', $product->id)->first();
 
         if ($cartItem) {
-            $cartItem->update(['quantity' => $quantity]);
+            $cartItem->quantity = $request->input('quantity');
+            $cartItem->save();
         }
 
-        return redirect()->route('cart')->with('success', 'Cart updated');
+        return redirect()->route('account', ['section' => 'cart'])->with('success', 'Cart updated successfully!');
     }
 
-    /**
-     * Remove a product from the cart.
-     */
+    // Remove item from cart
     public function removeFromCart(Product $product)
     {
-        CartItem::where('user_id', Auth::id())
-            ->where('product_id', $product->id)
-            ->delete();
-
-        return redirect()->route('cart')->with('success', 'Product removed from cart');
-    }
-
-    /**
-     * Checkout and create an order.
-     */
-    public function checkout()
-    {
-        $cartItems = CartItem::where('user_id', Auth::id())->get();
-
-        if ($cartItems->isEmpty()) {
-            return redirect()->route('cart')->with('error', 'Your cart is empty');
+        $cartItem = Auth::user()->cartItems->where('product_id', $product->id)->first();
+        if ($cartItem) {
+            $cartItem->delete();
         }
 
-        $order = Order::create([
-            'user_id' => Auth::id(),
-            'status' => 'pending'
-        ]);
-
-        foreach ($cartItems as $item) {
-            $order->products()->attach($item->product_id, ['quantity' => $item->quantity]);
-            $item->delete();
-        }
-
-        return redirect()->route('order.history')->with('success', 'Order placed successfully');
+        return redirect()->route('account', ['section' => 'cart'])->with('success', 'Product removed from cart successfully!');
     }
 
-    public function account(Request $request)
+    public function processCheckout()
     {
         $user = Auth::user();
-    
-        // Determine the section to show based on the query parameter
-        $section = $request->query('section', 'profile'); // default to 'profile' section if not specified
-    
+        $cartItems = $user->cartItems()->with('product')->get();
+
+        // Check if the cart is empty
+        if ($cartItems->isEmpty()) {
+            return redirect()->route('account', ['section' => 'cart'])->with('error', 'Your cart is empty!');
+        }
+
+        // Generate a unique random order number
+        $orderNumber = $this->generateOrderNumber();
+        print($orderNumber);
+
+        // Create an order with the unique order number
+        $order = $user->orders()->create([
+            'order_number' => $orderNumber,
+            'status' => 'Pending',
+        ]);
+
+        // Loop through cart items, add to order summary, and update stock
+        $orderItems = [];
+        foreach ($cartItems as $item) {
+            // Get product details
+            $product = $item->product;
+
+            $orderItems[] = [
+                'product_id' => $product->id,
+                'name' => $product->name,
+                'image' => $product->image, // Assuming 'image' is the name of the column storing the product image path
+                'quantity' => $item->quantity,
+                'price' => $product->price,
+            ];
+
+            // Update the stock for each product
+            $product->decrement('stock', $item->quantity);
+        }
+
+        // Optionally, store the order items in the order (if needed)
+        $order->items = json_encode($orderItems); // Store order items as JSON in the order's 'items' column
+        $order->save();
+
+        // Clear the cart items after checkout
+        $user->cartItems()->delete();
+
+        return redirect()->route('account', ['section' => 'order-history'])->with('success', 'Checkout successful! Your order has been placed.');
+    }
+
+
+
+    public function account(Request $request, $section)
+    {
+        $user = Auth::user();
+
         // Load data specific to the section
         switch ($section) {
             case 'order-history':
@@ -125,14 +146,39 @@ class ShopController extends Controller
                 return view('shop.account', compact('user', 'section'));
         }
     }
-    
 
-    // /**
-    //  * Display order history for the customer.
-    //  */
-    // public function orderHistory()
-    // {
-    //     $orders = Auth::user()->orders()->with('products')->get();
-    //     return view('shop.order_history', compact('orders'));
-    // }
+
+    // Update the profile information
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'nullable|string|max:255',
+        ]);
+
+        $user = Auth::user();
+        $user->update([
+            'name' => $request->name,
+            'address' => $request->address,
+        ]);
+
+        return redirect()->route('account', ['section' => 'profile'])->with('success', 'Profile updated successfully.');
+    }
+
+    /**
+     * Generate a unique order number with uppercase letters and numbers.
+     *
+     * @return string
+     */
+    protected function generateOrderNumber()
+    {
+        $orderNumber = strtoupper(substr(bin2hex(random_bytes(5)), 0, 15));
+
+        // Check if this order number already exists and regenerate if necessary
+        while (\App\Models\Order::where('order_number', $orderNumber)->exists()) {
+            $orderNumber = strtoupper(substr(bin2hex(random_bytes(5)), 0, 15));
+        }
+
+        return $orderNumber;
+    }
 }
