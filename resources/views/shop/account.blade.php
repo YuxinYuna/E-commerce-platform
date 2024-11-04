@@ -73,7 +73,7 @@
                                             <span class="text-muted">({{ $order->created_at->format('F j, Y, g:i a') }})</span>
                                         </th>
                                         <th>Status: {{ $order->status }}</th>
-                                        <th class="text-right">Total Cost: ${{ number_format($order->total_cost, 2) }}</th>
+                                        <th class="text-right">Total Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody>

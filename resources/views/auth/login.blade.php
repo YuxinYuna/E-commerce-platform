@@ -207,8 +207,8 @@
                 </div>
             </form>
         </div>
-        <!-- Placeholder for Admin Entrance -->
-        <h5><div class="placeholder-text">Admin Entrance</div></h5>
+        <!-- Placeholder for Customer Entrance -->
+        <h5><div class="placeholder-text">Customer Entrance</div></h5>
     </div>
 
     <!-- Admin Entrance -->
@@ -242,8 +242,8 @@
                 </div>
             </form>
         </div>
-        <!-- Placeholder for Customer Entrance -->
-        <h5><div class="placeholder-text">Customer Entrance</div></h5>
+        <!-- Placeholder for Admin Entrance -->
+        <h5><div class="placeholder-text">Admin Entrance</div></h5>
     </div>
 </div>
 
