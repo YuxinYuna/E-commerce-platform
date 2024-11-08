@@ -19,19 +19,19 @@
     @method('PUT')
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" class="form-control" id="name" name="name" value="{{ $product->name }}" required>
+        <input type="text" class="form-control" id="name" name="name" value="{{ $product->name }}" >
     </div>
     <div class="form-group">
         <label for="price">Price</label>
-        <input type="number" class="form-control" id="price" name="price" value="{{ $product->price }}" required>
+        <input type="number" class="form-control" id="price" name="price" value="{{ $product->price }}" >
     </div>
     <div class="form-group">
         <label for="stock">Stock</label>
-        <input type="number" class="form-control" id="stock" name="stock" value="{{ $product->stock }}" required>
+        <input type="number" class="form-control" id="stock" name="stock" value="{{ $product->stock }}" >
     </div>
     <div class="form-group">
         <label for="image">Product Image</label>
-        <input type="file" name="image" class="form-control" required>
+        <input type="file" name="image" class="form-control" >
         @if($product->image)
             <img src="{{ asset('images/products/' . $product->image) }}" alt="Product Image" class="img-thumbnail mt-2" width="150">
         @endif

@@ -21,6 +21,7 @@
         <!-- Main Content -->
         <div class="col-md-9">
             @if ($section == 'profile')
+                <!-- Profile Section -->
                 <h3>Profile</h3>
                 <p>Name: {{ $user->name }}</p>
                 <p>Email: {{ $user->email }}</p>
@@ -61,16 +62,16 @@
                 </form>
 
             @elseif ($section == 'order-history')
-            <h3>Order History</h3>
+                <!-- Order History Section -->
+                <h3>Order History</h3>
                 @if (isset($orders) && $orders->isNotEmpty())
-                    @foreach ($orders as $order)
+                    @foreach ($orders->sortByDesc('created_at') as $order)
                         <div class="order-history mb-5 p-3 shadow-sm rounded">
                             <table class="table">
                                 <thead>
                                     <tr>
                                         <th colspan="2">
                                             <strong>Order #{{ $order->order_number }}</strong>
-                                            <span class="text-muted">({{ $order->created_at->format('F j, Y, g:i a') }})</span>
                                         </th>
                                         <th>Status: {{ $order->status }}</th>
                                         <th class="text-right">Total Cost</th>
@@ -91,10 +92,16 @@
                                         @php
                                             $itemTotal = $item['quantity'] * $item['price'];
                                             $totalCost += $itemTotal;
+                                            $imagePath = public_path('images/products/' . $item['image']);
                                         @endphp
                                         <tr>
                                             <td>
-                                                <img src="{{ asset('images/products/' . $item['image']) }}" alt="{{ $item['name'] }}" style="width: 50px; height: auto; margin-right: 10px; border-radius: 5px;">
+                                                @if ($item['image'] && file_exists($imagePath))
+                                                    <img src="{{ asset('images/products/' . $item['image']) }}" alt="{{ $item['name'] }}" style="width: 50px; height: auto; margin-right: 10px; border-radius: 5px;">
+                                                @else
+                                                    <img src="{{ asset('images/default/removed.png') }}" alt="Product Removed" style="width: 50px; height: auto; margin-right: 10px; border-radius: 5px;">
+                                                    <span>Product has been removed</span>
+                                                @endif
                                                 {{ $item['name'] }}
                                             </td>
                                             <td>{{ $item['quantity'] }}</td>
@@ -110,6 +117,12 @@
                                     </tr>
                                 </tfoot>
                             </table>
+                            <!-- Delete Order Button -->
+                            <form action="{{ route('customer.orders.destroy', $order->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this order?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger mt-2">Delete Order</button>
+                            </form>
                         </div>
                     @endforeach
                 @else
@@ -117,6 +130,7 @@
                 @endif
 
             @elseif ($section == 'cart')
+                <!-- Cart Section -->
                 <h3>Cart</h3>
                 @if ($cartItems->isNotEmpty())
                     <table class="table table-striped">
@@ -211,8 +225,9 @@
             margin-left: 0;
         }
     }
+
     .order-history {
-    background-color: #f8f9fa;
+        background-color: #f8f9fa;
     }
 
     .table th {
@@ -221,7 +236,7 @@
     }
 
     .table td, .table th {
-        border-top: none !important; /* Remove top border */
+        border-top: none !important;
         padding: 10px;
     }
 
@@ -230,14 +245,12 @@
     }
 
     .table thead tr th {
-        border-bottom: 2px solid #e9ecef; /* Soft line under header */
+        border-bottom: 2px solid #e9ecef;
     }
 
     .table tfoot tr td {
         font-size: 1.1em;
         color: #333;
     }
-
-
 </style>
 @endsection

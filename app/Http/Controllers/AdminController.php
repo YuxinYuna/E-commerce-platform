@@ -71,32 +71,49 @@ class AdminController extends Controller
 
     public function updateProduct(Request $request, Product $product)
     {
+        // Validate input data
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
             'stock' => 'required|integer',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
         ]);
 
+        // Check if a new image is uploaded
         if ($request->hasFile('image')) {
+            // Delete the old image if it exists
             if ($product->image && file_exists(public_path('images/products/' . $product->image))) {
                 unlink(public_path('images/products/' . $product->image));
             }
-    
+
+            // Upload and save the new image
             $imageName = time() . '.' . $request->image->extension();
             $request->image->move(public_path('images/products'), $imageName);
             $validated['image'] = $imageName;
+        } else {
+            // Retain the existing image if no new image is uploaded
+            $validated['image'] = $product->image;
         }
 
+        // Update the product with validated data
         $product->update($validated);
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully.');
     }
 
+
     public function destroyProduct(Product $product)
     {
+        // // Check if the product has an image and if the file exists in the specified path
+        // $imagePath = public_path('images/products/' . $product->image);
+        // if ($product->image && file_exists($imagePath)) {
+        //     // Delete the image file
+        //     unlink($imagePath);
+        // }
+
+        // Delete the product record from the database
         $product->delete();
 
-        return redirect()->route('admin.products.index')->with('success', 'Product deleted successfully.');
+        return redirect()->route('admin.products.index')->with('success', 'Product and associated image deleted successfully.');
     }
 }

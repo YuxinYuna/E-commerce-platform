@@ -51,6 +51,8 @@ Route::middleware(['auth', RoleMiddleware::class . ':customer'])->group(function
     Route::post('/cart/remove/{product}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
     Route::post('/checkout', [ShopController::class, 'processCheckout'])->name('checkout.process');
     Route::post('/cart/add/{product}', [ShopController::class, 'add'])->name('cart.add');
+    Route::delete('/customer/orders/{order}', [ShopController::class, 'destroyOrder'])->name('customer.orders.destroy');
+
 });
 
 // Admin Routes, accessible only by users with the 'admin' role

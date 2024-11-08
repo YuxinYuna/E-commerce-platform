@@ -181,4 +181,13 @@ class ShopController extends Controller
 
         return $orderNumber;
     }
+
+    public function destroyOrder(Order $order)
+    {
+        // Delete the order and its related data if necessary
+        $order->delete();
+
+        return redirect()->route('account', ['section' => 'order-history'])->with('success', 'Order deleted successfully.');
+    }
+
 }
