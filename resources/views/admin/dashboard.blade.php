@@ -80,8 +80,9 @@
 </style>
 
 <div class="row">
+    
     <!-- KPI Cards -->
-    <div class="col-md-3">
+    <div class="col-md-6">
         <div class="card dashboard-card bg-light text-dark mb-4">
             <div class="card-body card-body-count">
                 <h5>Customers</h5>
@@ -91,7 +92,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-6">
         <div class="card dashboard-card bg-light text-dark mb-4">
             <div class="card-body card-body-count">
                 <h5>Orders</h5>
@@ -101,7 +102,10 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    
+</div>
+<div class="row">
+<div class="col-md-6">
         <div class="card dashboard-card bg-light text-dark mb-4">
             <div class="card-body card-body-count">
                 <h5>Revenue</h5>
@@ -111,7 +115,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-6">
         <div class="card dashboard-card bg-light text-dark mb-4">
             <div class="card-body card-body-count">
                 <h5>Growth</h5>
